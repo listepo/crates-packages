@@ -14,6 +14,13 @@
 [workspace]
 git_release_enable = false
 
+# `file-backup` was never published to crates.io, so the registry lookup comes
+# back empty and release-plz concludes it can diff against nothing — same trap
+# ketch's release-plz.toml documents. Git tags are the only record that a
+# release happened, which release.yml now makes literally true: it creates the
+# tag by publishing the release.
+git_only = true
+
 # Below 1.0 release-plz sends a `feat:` to the patch. A new feature is worth
 # more than a third digit to someone deciding whether to upgrade, 1.0 or not.
 features_always_increment_minor = true
