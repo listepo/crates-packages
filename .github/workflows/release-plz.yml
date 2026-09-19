@@ -8,12 +8,21 @@ name: release-plz
 # Nothing here tags anything or publishes anywhere. Only `release-pr` is ever
 # run: the tag and the crates.io publish are release.yml's to make, once there
 # is something behind them.
+#
+# Answers both push-to-main and PR events. A push to main opens/updates the
+# release PR against the base branch; a PR event lets this same update logic
+# run from the head branch (where `release-plz-${{ github.ref }}` reads its own
+# ref without privilege issues).
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   release-plz:
@@ -29,6 +38,13 @@ jobs:
       group: release-plz-${{ github.ref }}
       cancel-in-progress: false
 
+    # release-plz answers PR events too: the pending check is a read of main's
+    # tag state, but `git ls-remote origin` needs no privilege and reads the
+    # same refs from any branch. On a PR head the version in Cargo.toml is the
+    # head's — the PR under repair — which is exactly what the check must see.
+    # The default checkout on a PR event is the merge commit; full history is
+    # still needed for the changelog, so keep fetch-depth 0 and check out the
+    # head explicitly.
     steps:
       # A workflow run authenticated with the default GITHUB_TOKEN cannot start
       # another workflow run, so the release pull request it opens would land
@@ -53,6 +69,9 @@ jobs:
         with:
           # The changelog is built from the whole history, not one commit.
           fetch-depth: 0
+          # On PR events check out the head, not the merge commit: the merge
+          # ref is ephemeral and release-plz compares the branch itself.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
           token: ${{ secrets.RELEASE_PLZ_TOKEN }}
 
