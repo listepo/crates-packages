@@ -10,6 +10,43 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # release-plz derives the next version and the changelog from these messages,
+  # so a pull request's subjects are linted here. Pushes to main skip this:
+  # every commit there arrived through a pull request that already passed it.
+  commits:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Conventional commits
+        run: |
+          base="origin/${{ github.base_ref }}"
+          # A range that does not resolve must be an error: rev-list would
+          # print nothing, the loop would see no commits, and a broken check
+          # would pass itself.
+          git rev-parse -q --verify "$base^{commit}" > /dev/null \
+            || { echo "base branch $base not found" >&2; exit 1; }
+          echo "linting $(git rev-list --count --no-merges "$base..HEAD") commit(s) from $base"
+          bad=0
+          for sha in $(git rev-list --no-merges --reverse "$base..HEAD"); do
+            subject=$(git log -1 --format=%s "$sha")
+            # Same passthrough as ketch: git writes reverts in its own format,
+            # not as conventional commits.
+            case "$subject" in
+              "Revert "*) continue ;;
+            esac
+            echo "checking $sha: $subject"
+            if ! printf '%s' "$subject" | grep -qE '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?: .+'; then
+              echo "not a conventional commit: $sha $subject" >&2
+              bad=1
+            fi
+          done
+          exit $bad
+
+
   check:
     runs-on: ubuntu-latest
     steps:
@@ -26,9 +63,9 @@ jobs:
       - name: Test
         run: cargo test --workspace --locked
 
-      # Publishing happens only from a non-draft GitHub Release (see
-      # publish.yml). Every other push just proves the crates are
-      # publish-ready, so a broken publish breaks here, not at release time.
+      # Publishing happens only from release.yml on a version-bump merge (see
+      # below). Every other push just proves the crates are publish-ready, so
+      # a broken publish breaks here, not at release time.
       - name: Publish dry-run
         run: cargo publish --dry-run -p file-backup --locked
 
