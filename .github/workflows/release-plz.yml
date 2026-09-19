@@ -9,16 +9,14 @@ name: release-plz
 # run: the tag and the crates.io publish are release.yml's to make, once there
 # is something behind them.
 #
-# Answers both push-to-main and PR events. A push to main opens/updates the
-# release PR against the base branch; a PR event lets this same update logic
-# run from the head branch (where `release-plz-${{ github.ref }}` reads its own
-# ref without privilege issues).
+# Push to main only — exactly like ketch. release-plz resolves the upstream
+# with `git rev-parse --abbrev-ref --symbolic-full-name @{upstream}`, which
+# fails on a detached HEAD ("HEAD does not point to a branch"): neither the
+# PR merge commit nor a head SHA checkout has an upstream. On a push checkout
+# HEAD is attached to main and the command works.
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -38,13 +36,8 @@ jobs:
       group: release-plz-${{ github.ref }}
       cancel-in-progress: false
 
-    # release-plz answers PR events too: the pending check is a read of main's
-    # tag state, but `git ls-remote origin` needs no privilege and reads the
-    # same refs from any branch. On a PR head the version in Cargo.toml is the
-    # head's — the PR under repair — which is exactly what the check must see.
-    # The default checkout on a PR event is the merge commit; full history is
-    # still needed for the changelog, so keep fetch-depth 0 and check out the
-    # head explicitly.
+    # The pending check reads main's tag state via `git ls-remote origin`, which
+    # needs no privilege and reads the same refs from anywhere.
     steps:
       # A workflow run authenticated with the default GITHUB_TOKEN cannot start
       # another workflow run, so the release pull request it opens would land
@@ -69,9 +62,6 @@ jobs:
         with:
           # The changelog is built from the whole history, not one commit.
           fetch-depth: 0
-          # On PR events check out the head, not the merge commit: the merge
-          # ref is ephemeral and release-plz compares the branch itself.
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
           token: ${{ secrets.RELEASE_PLZ_TOKEN }}
 
