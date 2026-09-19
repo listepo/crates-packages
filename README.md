@@ -32,3 +32,18 @@ cargo fmt --all -- --check
 Secrets: `CARGO_REGISTRY_TOKEN` (crates.io API token) and
 `RELEASE_PLZ_TOKEN` (a PAT that can trigger workflows, see
 https://release-plz.dev/docs/github/token).
+
+## Secrets
+
+Two secrets must exist in the repo settings
+(`Settings → Secrets and variables → Actions → New repository secret`):
+
+| Secret | Where to get it | Used by |
+| --- | --- | --- |
+| `CARGO_REGISTRY_TOKEN` | crates.io → Account Settings → API Tokens → New Token (needs `publish` scope; restrict it to the `file-backup` crate). Add with `gh secret set CARGO_REGISTRY_TOKEN --repo listepo/crates-packages` | `release.yml`, job `crates-io`: `cargo publish -p file-backup` |
+| `RELEASE_PLZ_TOKEN` | A fine-grained PAT (or GitHub App token) with **Contents** and **Pull requests** read/write on this repo — see https://release-plz.dev/docs/github/token. The default `GITHUB_TOKEN` cannot trigger `release.yml` from the release PR it opens, so without this the release PR would land without CI. Add with `gh secret set RELEASE_PLZ_TOKEN --repo listepo/crates-packages` | `release-plz.yml`: opens/updates the release PR |
+
+Without `CARGO_REGISTRY_TOKEN` the release stops at the `crates-io` job with
+a loud error and publishes nothing — the tag is never created.
+Without `RELEASE_PLZ_TOKEN` the `release-plz` workflow fails loudly at its
+first step instead of opening a release PR that could never trigger CI.
