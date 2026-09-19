@@ -49,6 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # From the second release onwards, release-plz points a version heading at the
 # diff against the previous tag. The release page is the useful destination: it
 # is what someone reading the changelog is looking for.
+# NOTE: This is a TOML literal string, so TOML preserves backslashes. The regex
+# receives `\\.` to match a literal dot.
 postprocessors = [
-  { pattern = 'https://github\\.com/listepo/crates-packages/compare/[^)\\s]*\\.\\.\\.([^)\\s]*)', replace = "https://github.com/listepo/crates-packages/releases/tag/${1}" },
+  { pattern = 'https://github\.com/listepo/crates-packages/compare/[^)\s]*\.\.\.([^)\s]*)', replace = "https://github.com/listepo/crates-packages/releases/tag/${1}" },
 ]

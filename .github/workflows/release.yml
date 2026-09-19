@@ -227,6 +227,10 @@ jobs:
             exit 1
           fi
           set +e
+          # cargo publish needs the registry credentials as a real config file:
+          # the env var alone authenticates `cargo login`, not `cargo publish`.
+          mkdir -p "$HOME/.cargo"
+          printf '[registry]\ntoken = "%s"\n' "$CARGO_REGISTRY_TOKEN" > "$HOME/.cargo/credentials.toml"
           cargo publish -p file-backup --locked > publish.log 2>&1
           status=$?
           set -e

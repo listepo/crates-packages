@@ -8,12 +8,19 @@ name: release-plz
 # Nothing here tags anything or publishes anywhere. Only `release-pr` is ever
 # run: the tag and the crates.io publish are release.yml's to make, once there
 # is something behind them.
+#
+# Push to main only — exactly like ketch. release-plz resolves the upstream
+# with `git rev-parse --abbrev-ref --symbolic-full-name @{upstream}`, which
+# fails on a detached HEAD ("HEAD does not point to a branch"): neither the
+# PR merge commit nor a head SHA checkout has an upstream. On a push checkout
+# HEAD is attached to main and the command works.
 on:
   push:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   release-plz:
@@ -29,6 +36,8 @@ jobs:
       group: release-plz-${{ github.ref }}
       cancel-in-progress: false
 
+    # The pending check reads main's tag state via `git ls-remote origin`, which
+    # needs no privilege and reads the same refs from anywhere.
     steps:
       # A workflow run authenticated with the default GITHUB_TOKEN cannot start
       # another workflow run, so the release pull request it opens would land
