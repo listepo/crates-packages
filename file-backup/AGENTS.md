@@ -15,3 +15,5 @@ cargo test
 cargo clippy --all-targets
 cargo fmt
 ```
+
+`just test` runs the same tests and finishes with a lossless `dunnage` cleanup of the target dir.
