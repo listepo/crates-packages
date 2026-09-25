@@ -1,6 +1,6 @@
 # crates-packages
 
-[![ci](https://github.com/listepo/crates-packages/actions/workflows/ci.yml/badge.svg)](https://github.com/listepo/crates-packages/actions/workflows/ci.yml)
+[![ci](https://github.com/listepo/crates-packages/actions/workflows/ci.yml/badge.svg)](https://github.com/listepo/crates-packages/actions/workflows/ci.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=listepo_crates-packages&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=listepo_crates-packages) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=listepo_crates-packages&metric=coverage)](https://sonarcloud.io/component_measures?id=listepo_crates-packages&metric=coverage) [![Tests](https://img.shields.io/sonar/tests/listepo_crates-packages?server=https%3A%2F%2Fsonarcloud.io&compact_message)](https://sonarcloud.io/component_measures?id=listepo_crates-packages&metric=tests)
 
 Small, focused Rust crates shared by `ketch` and `rtok`.
 
