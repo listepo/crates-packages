@@ -47,3 +47,11 @@ Without `CARGO_REGISTRY_TOKEN` the release stops at the `crates-io` job with
 a loud error and publishes nothing — the tag is never created.
 Without `RELEASE_PLZ_TOKEN` the `release-plz` workflow fails loudly at its
 first step instead of opening a release PR that could never trigger CI.
+
+## License
+
+You can use this project under **any** of the following licenses, at your choice:
+
+1. [GNU GPLv3](LICENSE): free for open source applications on any platform, including embedded systems.
+2. [Royalty-free License](LICENSE-ROYALTY-FREE.md): free for proprietary desktop, mobile, and web applications, as long as you disclose that your application uses this project. Embedded systems are not covered.
+3. [Commercial license](PRICING.md): for proprietary applications, including embedded systems, without the attribution requirement.
